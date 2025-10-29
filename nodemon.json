@@ -1,0 +1,6 @@
+{
+  "watch": ["app.js", ".env"],
+  "ext": "js,json,env",
+  "ignore": ["node_modules/**", "*.test.js"],
+  "delay": 1000
+}

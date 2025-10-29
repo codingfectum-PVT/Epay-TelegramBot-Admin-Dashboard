@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet Management - ZeroXPay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header-content p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: none;
+            color: white;
+        }
+
+        .dashboard-btn {
+            background: #667eea;
+        }
+
+        .dashboard-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .logout-btn {
+            background: #ff5252;
+        }
+
+        .logout-btn:hover {
+            background: #ff1744;
+            transform: translateY(-2px);
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h2 {
+            font-size: 24px;
+        }
+
+        .refresh-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+        }
+
+        tbody tr {
+            transition: background 0.3s;
+        }
+
+        tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .wallet-field {
+            font-family: monospace;
+            font-size: 13px;
+            color: #667eea;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .copy-btn {
+            /* background: #667eea; */
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+
+        .copy-btn.copied {
+            background: #4caf50;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+            font-size: 18px;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .warning {
+            background: #fff3e0;
+            color: #ef6c00;
+            padding: 15px 30px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #ef6c00;
+        }
+
+        .warning strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .balance {
+            font-weight: bold;
+            color: #4caf50;
+            font-size: 14px;
+        }
+
+        .balance.zero {
+            color: #999;
+        }
+
+        .balance-loading {
+            color: #667eea;
+            font-size: 12px;
+            font-style: italic;
+        }
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .pagination-info {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .page-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            min-width: 40px;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .page-btn:disabled {
+            background: #f5f5f5;
+            color: #ccc;
+            border-color: #e0e0e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .page-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .page-size-selector {
+            padding: 8px 12px;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .page-size-selector:focus {
+            outline: none;
+            border-color: #5568d3;
+        }
+
+        .page-numbers {
+            display: flex;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <h1>🔐 Wallet Management</h1>
+                <p>Super Admin Access - View all wallet addresses and private keys</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn dashboard-btn" onclick="window.location.href='/dashboard.html'">📊 Dashboard</button>
+                <button class="btn logout-btn" onclick="logout()">🚪 Logout</button>
+            </div>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Security Warning</strong>
+            This page contains sensitive private keys. Never share this information with anyone.
+        </div>
+
+        <div class="table-container">
+            <div class="table-header">
+                <h2>All Wallets</h2>
+                <button class="refresh-btn" onclick="loadWallets(currentPage, pageSize)">🔄 Refresh</button>
+            </div>
+            <div id="tableContent">
+                <div class="loading">Loading wallets...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+
+        // Pagination state
+        let currentPage = 1;
+        let pageSize = 10;
+        let totalPages = 1;
+        let totalWallets = 0;
+
+        // Check authentication and super admin role
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_URL}/auth/check`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (!data.authenticated) {
+                    window.location.href = '/login.html';
+                } else if (data.role !== 'super') {
+                    alert('Access Denied: Super Admin only');
+                    window.location.href = '/dashboard.html';
+                }
+            } catch (error) {
+                window.location.href = '/login.html';
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                await fetch(`${API_URL}/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = '/login.html';
+            } catch (error) {
+                alert('Logout failed');
+            }
+        }
+
+        // Copy to clipboard
+        function copyToClipboard(text, btnId) {
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById(btnId);
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Copied';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                alert('Failed to copy');
+            });
+        }
+
+        async function loadWallets(page = currentPage, limit = pageSize) {
+            try {
+                // Show loading message
+                document.getElementById('tableContent').innerHTML = '<div class="loading">Loading wallets and fetching USDT balances... Please wait.</div>';
+
+                const response = await fetch(`${API_URL}/wallets?page=${page}&limit=${limit}`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update pagination state
+                    currentPage = data.pagination.currentPage;
+                    totalPages = data.pagination.totalPages;
+                    totalWallets = data.pagination.totalWallets;
+                    pageSize = data.pagination.limit;
+
+                    displayWallets(data.wallets);
+                    renderPagination();
+                } else {
+                    if (response.status === 403) {
+                        alert('Access Denied: Super Admin only');
+                        window.location.href = '/dashboard.html';
+                    } else if (response.status === 401) {
+                        window.location.href = '/login.html';
+                    } else {
+                        showError('Failed to load wallets');
+                    }
+                }
+            } catch (error) {
+                showError('Error connecting to server: ' + error.message);
+            }
+        }
+
+        function changePage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            loadWallets(page, pageSize);
+        }
+
+        function changePageSize(newSize) {
+            pageSize = parseInt(newSize);
+            currentPage = 1; // Reset to first page
+            loadWallets(1, pageSize);
+        }
+
+        function renderPagination() {
+            const tableContent = document.getElementById('tableContent');
+
+            // Calculate start and end indices
+            const startIndex = (currentPage - 1) * pageSize + 1;
+            const endIndex = Math.min(currentPage * pageSize, totalWallets);
+
+            // Generate page numbers to display (max 5 pages)
+            let pageNumbers = [];
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+
+            // Adjust if we're near the beginning or end
+            if (currentPage <= 3) {
+                endPage = Math.min(5, totalPages);
+            }
+            if (currentPage >= totalPages - 2) {
+                startPage = Math.max(1, totalPages - 4);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                pageNumbers.push(i);
+            }
+
+            const paginationHTML = `
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        Showing ${startIndex}-${endIndex} of ${totalWallets} wallets
+                    </div>
+                    <div class="pagination-controls">
+                        <label style="color: #666; margin-right: 10px;">Show:</label>
+                        <select class="page-size-selector" onchange="changePageSize(this.value)">
+                            <option value="10" ${pageSize === 10 ? 'selected' : ''}>10</option>
+                            <option value="25" ${pageSize === 25 ? 'selected' : ''}>25</option>
+                            <option value="50" ${pageSize === 50 ? 'selected' : ''}>50</option>
+                            <option value="100" ${pageSize === 100 ? 'selected' : ''}>100</option>
+                        </select>
+
+                        <button class="page-btn" onclick="changePage(1)" ${currentPage === 1 ? 'disabled' : ''}>
+                            ⏮ First
+                        </button>
+                        <button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                            ◀ Prev
+                        </button>
+
+                        <div class="page-numbers">
+                            ${pageNumbers.map(num => `
+                                <button class="page-btn ${num === currentPage ? 'active' : ''}"
+                                        onclick="changePage(${num})">
+                                    ${num}
+                                </button>
+                            `).join('')}
+                        </div>
+
+                        <button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                            Next ▶
+                        </button>
+                        <button class="page-btn" onclick="changePage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}>
+                            Last ⏭
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Append pagination to table content
+            tableContent.innerHTML += paginationHTML;
+        }
+
+        function displayWallets(wallets) {
+            const tableContent = document.getElementById('tableContent');
+
+            if (wallets.length === 0) {
+                tableContent.innerHTML = '<div class="loading">No wallets found</div>';
+                return;
+            }
+
+            const table = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sr.</th>
+                            <th>Username</th>
+                            <th>Telegram ID</th>
+                            <th>Wallet Address</th>
+                            <th>USDT Balance</th>
+                            <th>Private Key</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${wallets.map((wallet, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>
+                                    <div class="wallet-field">
+                                        @${wallet.username}
+                                        <button class="copy-btn" id="copy-user-${index}" onclick="copyToClipboard('@${wallet.username}', 'copy-user-${index}')">📋</button>
+                                    </div>
+                                </td>
+                                <td>${wallet.tgId}</td>
+                                <td>
+                                    <div class="wallet-field" title="${wallet.address}">
+                                        ${wallet.address.substring(0, 10)}...${wallet.address.substring(wallet.address.length - 8)}
+                                        <button class="copy-btn" id="copy-addr-${index}" onclick="copyToClipboard('${wallet.address}', 'copy-addr-${index}')">📋</button>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="balance ${wallet.balance === 0 ? 'zero' : ''}">
+                                        ${wallet.balance.toFixed(2)} USDT
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="wallet-field" title="${wallet.privateKey}">
+                                        ${wallet.privateKey.substring(0, 10)}...${wallet.privateKey.substring(wallet.privateKey.length - 8)}
+                                        <button class="copy-btn" id="copy-key-${index}" onclick="copyToClipboard('${wallet.privateKey}', 'copy-key-${index}')">📋</button>
+                                    </div>
+                                </td>
+                                <td>${new Date(wallet.createdAt).toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            tableContent.innerHTML = table;
+        }
+
+        function showError(message) {
+            document.getElementById('tableContent').innerHTML =
+                `<div class="error">${message}</div>`;
+        }
+
+        // Check auth and load wallets on page load
+        checkAuth();
+        loadWallets();
+    </script>
+</body>
+</html>

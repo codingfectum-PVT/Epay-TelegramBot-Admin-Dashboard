@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZeroXPay - Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header-content p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .logout-btn {
+            background: #ff5252;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #ff1744;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 82, 82, 0.3);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            color: #667eea;
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h2 {
+            font-size: 24px;
+        }
+
+        .refresh-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+        }
+
+        tbody tr {
+            transition: background 0.3s;
+        }
+
+        tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.anonymous {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge.normal {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.pending {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .status-badge.inprocess {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-badge.delivered {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .wallet {
+            font-family: monospace;
+            font-size: 13px;
+            color: #667eea;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+            font-size: 18px;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .status-selector {
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .status-selector:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .copy-btn {
+            /* background: #667eea; */
+            border: 2px solid #667eea;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+
+        .copy-btn.copied {
+            background: #4caf50;
+        }
+
+        .username-field, .wallet-field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideDown 0.3s;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-header h2 {
+            color: #667eea;
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #999;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group input.error {
+            border-color: #ff5252;
+        }
+
+        .error-message {
+            color: #ff5252;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .btn-submit {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: #f5f5f5;
+            color: #333;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .status-selector:disabled {
+            background-color: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <h1>🎴 ZeroXPay Admin Dashboard</h1>
+                <p>Manage and monitor card orders</p>
+            </div>
+            <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Orders</h3>
+                <div class="number" id="totalOrders">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Pending</h3>
+                <div class="number" id="pendingOrders">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>In Process</h3>
+                <div class="number" id="inprocessOrders">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Delivered</h3>
+                <div class="number" id="deliveredOrders">0</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-header">
+                <h2>Paid Orders</h2>
+                <button class="refresh-btn" onclick="loadOrders()">🔄 Refresh</button>
+            </div>
+            <div id="tableContent">
+                <div class="loading">Loading orders...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Details Modal -->
+    <div id="cardModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>💳 Enter Card Details</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="cardDetailsForm" onsubmit="submitCardDetails(event)">
+                <div class="form-group">
+                    <label for="cardNumber">Card Number *</label>
+                    <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" required maxlength="19">
+                    <span class="error-message" id="cardNumberError">Please enter a valid card number</span>
+                </div>
+                <div class="form-group">
+                    <label for="cardName">Card Name *</label>
+                    <input type="text" id="cardName" name="cardName" placeholder="JOHN DOE" required>
+                    <span class="error-message" id="cardNameError">Please enter the card holder name</span>
+                </div>
+                <div class="form-group">
+                    <label for="expiryDate">Expiry Date *</label>
+                    <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY" required maxlength="5">
+                    <span class="error-message" id="expiryDateError">Please enter a valid expiry date (MM/YY)</span>
+                </div>
+                <div class="form-group">
+                    <label for="cvv">CVV *</label>
+                    <input type="text" id="cvv" name="cvv" placeholder="123" required maxlength="4">
+                    <span class="error-message" id="cvvError">Please enter a valid CVV</span>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-submit">Submit & Deliver</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+
+        // Check authentication
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${API_URL}/auth/check`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (!data.authenticated) {
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                window.location.href = '/login.html';
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                await fetch(`${API_URL}/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = '/login.html';
+            } catch (error) {
+                alert('Logout failed');
+            }
+        }
+
+        async function loadOrders() {
+            try {
+                const response = await fetch(`${API_URL}/orders`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    displayOrders(data.orders);
+                    updateStats(data.orders);
+                } else {
+                    if (response.status === 401) {
+                        window.location.href = '/login.html';
+                    } else {
+                        showError('Failed to load orders');
+                    }
+                }
+            } catch (error) {
+                showError('Error connecting to server: ' + error.message);
+            }
+        }
+
+        function displayOrders(orders) {
+            const tableContent = document.getElementById('tableContent');
+
+            if (orders.length === 0) {
+                tableContent.innerHTML = '<div class="loading">No paid orders found</div>';
+                return;
+            }
+
+            const table = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sr.</th>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Card Type</th>
+                            <th>Card Status</th>
+                            <th>Wallet Address</th>
+                            <th>Changed By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${orders.map((order, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>
+                                    <div class="username-field">
+                                        @${order.username}
+                                        <button class="copy-btn" id="copy-user-${index}" onclick="copyToClipboard('@${order.username}', 'copy-user-${index}')">📋</button>
+                                    </div>
+                                </td>
+                                <td>${order.firstName} ${order.lastName}</td>
+                                <td>
+                                    <span class="badge ${order.cardType}">
+                                        ${order.cardType === 'anonymous' ? '🕶️ Anonymous' : '👤 Normal'}
+                                    </span>
+                                </td>
+                                <td>
+                                    <select class="status-selector" onchange="handleStatusChange('${order.id}', this.value, this)" ${order.cardStatus === 'delivered' ? 'disabled' : ''}>
+                                        <option value="pending" ${order.cardStatus === 'pending' ? 'selected' : ''}>⏳ Pending</option>
+                                        <option value="inprocess" ${order.cardStatus === 'inprocess' ? 'selected' : ''}>🔄 In Process</option>
+                                        <option value="delivered" ${order.cardStatus === 'delivered' ? 'selected' : ''}>✅ Delivered</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <div class="wallet-field" title="${order.walletAddress}">
+                                        <span class="wallet">${order.walletAddress}</span>
+                                        <button class="copy-btn" id="copy-wallet-${index}" onclick="copyToClipboard('${order.walletAddress}', 'copy-wallet-${index}')">📋</button>
+                                    </div>
+                                </td>
+                                <td>
+                                    ${order.statusChangedBy ? `
+                                        <div style="font-size: 13px;">
+                                            <strong>${order.statusChangedBy}</strong><br>
+                                            <span style="color: #999; font-size: 11px;">
+                                                ${order.statusChangedAt ? new Date(order.statusChangedAt).toLocaleString() : ''}
+                                            </span>
+                                        </div>
+                                    ` : '<span style="color: #999;">-</span>'}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            tableContent.innerHTML = table;
+        }
+
+        function updateStats(orders) {
+            document.getElementById('totalOrders').textContent = orders.length;
+            document.getElementById('pendingOrders').textContent = orders.filter(o => o.cardStatus === 'pending').length;
+            document.getElementById('inprocessOrders').textContent = orders.filter(o => o.cardStatus === 'inprocess').length;
+            document.getElementById('deliveredOrders').textContent = orders.filter(o => o.cardStatus === 'delivered').length;
+        }
+
+        // Global variables for modal
+        let currentOrderId = null;
+        let currentSelectElement = null;
+        let previousStatus = null;
+
+        function handleStatusChange(orderId, newStatus, selectElement) {
+            if (newStatus === 'delivered') {
+                // Store the current state
+                currentOrderId = orderId;
+                currentSelectElement = selectElement;
+                previousStatus = selectElement.dataset.previousValue || selectElement.value;
+
+                // Open modal to collect card details
+                openModal();
+            } else {
+                // Update status directly for non-delivered statuses
+                updateStatus(orderId, newStatus, null);
+            }
+        }
+
+        function openModal() {
+            document.getElementById('cardModal').style.display = 'block';
+            // Reset form
+            document.getElementById('cardDetailsForm').reset();
+            // Clear error messages
+            document.querySelectorAll('.error-message').forEach(msg => msg.style.display = 'none');
+            document.querySelectorAll('.form-group input').forEach(input => input.classList.remove('error'));
+        }
+
+        function closeModal() {
+            document.getElementById('cardModal').style.display = 'none';
+            // Reset the select element to previous value
+            if (currentSelectElement && previousStatus) {
+                currentSelectElement.value = previousStatus;
+            }
+            currentOrderId = null;
+            currentSelectElement = null;
+            previousStatus = null;
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('cardModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        function validateCardNumber(cardNumber) {
+            // Remove spaces and check if it's 13-19 digits
+            const cleaned = cardNumber.replace(/\s/g, '');
+            return /^\d{13,19}$/.test(cleaned);
+        }
+
+        function validateExpiryDate(expiryDate) {
+            // Check MM/YY format
+            const regex = /^(0[1-9]|1[0-2])\/\d{2}$/;
+            if (!regex.test(expiryDate)) return false;
+
+            // Check if date is not expired
+            const [month, year] = expiryDate.split('/');
+            const expiry = new Date(2000 + parseInt(year), parseInt(month));
+            const now = new Date();
+            return expiry > now;
+        }
+
+        function validateCVV(cvv) {
+            return /^\d{3,4}$/.test(cvv);
+        }
+
+        // Format card number with spaces
+        document.getElementById('cardNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formattedValue;
+        });
+
+        // Format expiry date
+        document.getElementById('expiryDate').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.slice(0, 2) + '/' + value.slice(2, 4);
+            }
+            e.target.value = value;
+        });
+
+        // Only allow digits for CVV
+        document.getElementById('cvv').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
+        async function submitCardDetails(event) {
+            event.preventDefault();
+
+            // Get form values
+            const cardNumber = document.getElementById('cardNumber').value.trim();
+            const cardName = document.getElementById('cardName').value.trim();
+            const expiryDate = document.getElementById('expiryDate').value.trim();
+            const cvv = document.getElementById('cvv').value.trim();
+
+            // Validate all fields
+            let isValid = true;
+
+            if (!validateCardNumber(cardNumber)) {
+                document.getElementById('cardNumber').classList.add('error');
+                document.getElementById('cardNumberError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('cardNumber').classList.remove('error');
+                document.getElementById('cardNumberError').style.display = 'none';
+            }
+
+            if (!cardName) {
+                document.getElementById('cardName').classList.add('error');
+                document.getElementById('cardNameError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('cardName').classList.remove('error');
+                document.getElementById('cardNameError').style.display = 'none';
+            }
+
+            if (!validateExpiryDate(expiryDate)) {
+                document.getElementById('expiryDate').classList.add('error');
+                document.getElementById('expiryDateError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('expiryDate').classList.remove('error');
+                document.getElementById('expiryDateError').style.display = 'none';
+            }
+
+            if (!validateCVV(cvv)) {
+                document.getElementById('cvv').classList.add('error');
+                document.getElementById('cvvError').style.display = 'block';
+                isValid = false;
+            } else {
+                document.getElementById('cvv').classList.remove('error');
+                document.getElementById('cvvError').style.display = 'none';
+            }
+
+            if (!isValid) {
+                return;
+            }
+
+            // Prepare card details
+            const cardDetails = {
+                cardNumber: cardNumber,
+                cardName: cardName.toUpperCase(),
+                expiryDate: expiryDate,
+                cvv: cvv
+            };
+
+            // Update status with card details
+            await updateStatus(currentOrderId, 'delivered', cardDetails);
+            closeModal();
+        }
+
+        async function updateStatus(orderId, newStatus, cardDetails) {
+            try {
+                const payload = { cardStatus: newStatus };
+                if (cardDetails) {
+                    payload.cardDetails = cardDetails;
+                }
+
+                const response = await fetch(`${API_URL}/orders/${orderId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(payload),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    console.log('Status updated successfully');
+                    // Reload orders to update stats
+                    loadOrders();
+                } else {
+                    if (response.status === 401) {
+                        window.location.href = '/login.html';
+                    } else {
+                        alert('Failed to update status: ' + (data.error || 'Unknown error'));
+                        // Reset select to previous value
+                        if (currentSelectElement && previousStatus) {
+                            currentSelectElement.value = previousStatus;
+                        }
+                    }
+                }
+            } catch (error) {
+                alert('Error updating status: ' + error.message);
+                // Reset select to previous value
+                if (currentSelectElement && previousStatus) {
+                    currentSelectElement.value = previousStatus;
+                }
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('tableContent').innerHTML =
+                `<div class="error">${message}</div>`;
+        }
+
+        // Copy to clipboard
+        function copyToClipboard(text, btnId) {
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById(btnId);
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Copied';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                alert('Failed to copy');
+            });
+        }
+
+        // Check auth and load orders on page load
+        checkAuth();
+        loadOrders();
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadOrders, 30000);
+    </script>
+</body>
+</html>
